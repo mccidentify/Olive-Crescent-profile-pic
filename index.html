@@ -1,0 +1,214 @@
+ <div style="width:100%; margin-top:50px;">
+        <div id="step1">
+            <div class="custom-select">
+                <label for="select-hashtag">Select a hashtag </label>
+                <br>
+                <select id="select-hashtag">
+                    <option selected value="save_palestine">#SavePalestine</option>
+                    <option value="free_palestine">#FreePalestine</option>
+                    <option value="end_genocide">#EndGenocide</option>
+                    <option value="ceasefire_now">#CeasefireNow</option>
+                    <option value="united_for_palestine">#UnitedforPalestine</option>
+                </select>
+            </div>
+            <br>
+            <div class="custom-file-input" style="margin-top:10px">
+                <label for="fileInput">Choose Photo</label>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+            </div>
+        </div>
+        <div id="tool-box">
+            <button id="change-image-button" style="display: none;">Replace Photo</button>
+            <div id="crop-container" style='display:none; flex-direction:row; gap:5px;'>
+                <button class="rotate-button" id="rotate-left-button"><img width="17px"
+                        src="https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654be2e7faab75803ef3935f_rotate-left.png"
+                        alt=""></button>
+                <button class="rotate-button" id="rotate-right-button"><img width="17px"
+                        src="https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654be2e7d2f69dd71e4591c1_rotate-right.png"
+                        alt=""></button>
+            </div>
+        </div>
+        <img id="profileImage" style="display:none;" alt="Your Profile Image">
+    </div>
+
+    <div id="img-container"> </div>
+    <button class="crop" id="crop-button" style="display: none; margin-top:15px">Next</button>
+    <div>
+        <canvas id="badgeCanvas1"></canvas>
+        <br>
+        <div id="download-div">
+            <button id="back"><img width="25px"
+                    src="https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654d27541430a2a4333982a5_left.png"
+                    alt="start again"></button>
+            <button id="temp1-download-button" class="downloadButton"> Download </button>
+        </div>
+        <div id="instructions">
+            <p><strong>Instruction:</strong> <i>Upload your Olive Crescent profile pic to your social media profile to
+                    show your solidarity</i></p>
+        </div>
+    </div>
+
+    <div id="controls"></div>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/0.8.1/cropper.min.js'></script>
+    <script>
+        const IMAGE_OUTPUT_SIZE = 400;
+        const CIRCLE_RADIUS = 150;
+        var HASHTAG = "save_palestine";
+        var image = new Image();
+        image.crossOrigin = "anonymous";
+        const IMAGES = {
+            save_palestine: "https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654e095ae742a4adeae589c9_Olive-Crescent-Frame-Save-800.png",
+            free_palestine: "https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654e095a331eb72837936265_Olive-Crescent-Frame-Free-800.png",
+            end_genocide: "https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654e095ad02c97c37f0f445e_Olive-Crescent-Frame-End-800.png",
+            ceasefire_now: "https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654e095a03cb2ad9154cea6d_Olive-Crescent-Frame-Cease-800.png",
+            united_for_palestine: "https://uploads-ssl.webflow.com/652e5c64d6547ff46348e0eb/654e095ab4532ad3ccb5f3fc_Olive-Crescent-Frame-United-800.png",
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const step1 = document.getElementById("step1");
+            const fileInput = document.getElementById('fileInput');
+            const profileImage = document.getElementById('profileImage');
+            const badgeCanvas = document.getElementById('badgeCanvas1');
+            const cropButton = document.getElementById('crop-button');
+            const changeImageButton = document.getElementById('change-image-button');
+            const back = document.getElementById('back');
+            const rotateLeftButton = document.getElementById('rotate-left-button');
+            const rotateRightButton = document.getElementById('rotate-right-button');
+            const cropContainer = document.getElementById('crop-container');
+            const temp1DownloadButton = document.getElementById('temp1-download-button');
+
+            fileInput.addEventListener('change', handleFileUpload);
+            document.getElementById("select-hashtag").addEventListener("change", (event) => { HASHTAG = event.currentTarget.value });
+            cropButton.addEventListener('click', handleCrop);
+            changeImageButton.addEventListener('click', handleReset);
+            back.addEventListener('click', handleReset);
+            rotateLeftButton.addEventListener('click', handleRotateLeft);
+            rotateRightButton.addEventListener('click', handleRotateRight);
+            temp1DownloadButton.addEventListener('click', () => handleImageDownload(badgeCanvas1));
+
+            function handleReset() {
+                location.reload();
+            }
+
+            function handleFileUpload() {
+                const file = fileInput.files[0];
+                if (file) {
+                    step1.style.display = 'none';
+                    fileInput.style.display = 'none';
+                    cropButton.style.display = 'block';
+                    changeImageButton.style.display = 'block';
+                    cropContainer.style.display = 'block';
+
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        image.onload = function () {
+                            document.getElementById("img-container").appendChild(image);
+                            cropper = new Cropper(image, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                autoCropArea: 1,
+                                cropBoxResizable: true,
+                                cropBoxMovable: true,
+                                cropBoxMinWidth: IMAGE_OUTPUT_SIZE,
+                                cropBoxMinHeight: IMAGE_OUTPUT_SIZE,
+                                responsive: true,
+                            });
+                        };
+                        image.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }, false);
+
+        function getRoundedCanvas(sourceCanvas) {
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            var width = sourceCanvas.width;
+            var height = sourceCanvas.height;
+
+            canvas.width = width;
+            canvas.height = height;
+            context.imageSmoothingEnabled = true;
+            context.drawImage(sourceCanvas, 0, 0, width, height);
+            context.globalCompositeOperation = 'destination-in';
+            context.beginPath();
+            context.arc(width / 2, height / 2, Math.min(width, height) / 2, 0, 2 * Math.PI, true);
+            context.fill();
+            return canvas;
+        }
+
+        const getImageUrl = () => IMAGES[HASHTAG] || null;
+        const handleRotateLeft = () => cropper.rotate(-90);
+        const handleRotateRight = () => cropper.rotate(90);
+
+        function handleCrop() {
+            if (cropper) {
+                var croppedCanvas = cropper.getCroppedCanvas();
+                var roundedCanvas = getRoundedCanvas(croppedCanvas);
+                document.getElementById("img-container").style.display = "none";
+                document.getElementById("crop-button").style.display = "none";
+                document.getElementById('crop-container').style.display = 'none';
+                document.getElementById('change-image-button').style.display = 'none';
+                document.getElementById('download-div').style.display = 'flex';
+                document.getElementById('instructions').style.display = 'block';
+
+                const downloadButtons = document.getElementsByClassName('downloadButton');
+                for (let btn of downloadButtons) {
+                    btn.style.display = 'block';
+                }
+
+                image.src = roundedCanvas.toDataURL();
+                createImages();
+
+                image.src = roundedCanvas.toDataURL();
+                cropper.destroy();
+                cropper = new Cropper(image, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 1,
+                    cropBoxResizable: true,
+                    cropBoxMovable: true,
+                    cropBoxMinWidth: IMAGE_OUTPUT_SIZE,
+                    cropBoxMinHeight: IMAGE_OUTPUT_SIZE,
+                    responsive: true,
+                    zoomable: false,
+                });
+            }
+        }
+
+        function createImages() {
+            const frame1 = new Image();
+            frame1.crossOrigin = "anonymous";
+            frame1.src = getImageUrl();
+            generateTemplate1(image, badgeCanvas1, frame1);
+        }
+
+        function generateTemplate1(image, canvas, frame) {
+            frame.onload = () => {
+                canvas.width = IMAGE_OUTPUT_SIZE;
+                canvas.height = IMAGE_OUTPUT_SIZE;
+                const ctx = canvas.getContext('2d');
+                const TEMPLATE1_IMAGE_SIZE = 300;
+                const x = (IMAGE_OUTPUT_SIZE - TEMPLATE1_IMAGE_SIZE) / 2;
+                const y = (IMAGE_OUTPUT_SIZE - TEMPLATE1_IMAGE_SIZE) / 2;
+                ctx.drawImage(image, x, y, TEMPLATE1_IMAGE_SIZE, TEMPLATE1_IMAGE_SIZE);
+                ctx.drawImage(frame, 0, 0, IMAGE_OUTPUT_SIZE, IMAGE_OUTPUT_SIZE);
+                const modifiedImage = new Image();
+                modifiedImage.src = canvas.toDataURL();
+            };
+        }
+
+        function handleImageDownload(canvas) {
+            const offscreenCanvas = document.createElement('canvas');
+            const offscreenContext = offscreenCanvas.getContext('2d');
+            offscreenCanvas.width = canvas.width;
+            offscreenCanvas.height = canvas.height;
+            offscreenContext.drawImage(canvas, 0, 0);
+            const dataURL = offscreenCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = 'Olive-Crescent-profile-pic.png';
+            link.click();
+        }
+    </script>
